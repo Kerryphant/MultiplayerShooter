@@ -19,20 +19,38 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Animation.h" />
+    <ClInclude Include="include\Button.h" />
+    <ClInclude Include="include\Cursor.h" />
     <ClInclude Include="include\Input.h" />
     <ClInclude Include="include\IState.h" />
     <ClInclude Include="include\LevelState.h" />
     <ClInclude Include="include\MenuState.h" />
+    <ClInclude Include="include\MultiplayerState.h" />
+    <ClInclude Include="include\OptionsState.h" />
+    <ClInclude Include="include\Player.h" />
     <ClInclude Include="include\SplashState.h" />
+    <ClInclude Include="include\Sprite.h" />
     <ClInclude Include="Include\StateManager.h" />
+    <ClInclude Include="include\Tile.h" />
+    <ClInclude Include="include\TileMap.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Animation.cpp" />
+    <ClCompile Include="src\Button.cpp" />
+    <ClCompile Include="src\Cursor.cpp" />
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\LevelState.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MenuState.cpp" />
+    <ClCompile Include="src\MultiplayerState.cpp" />
+    <ClCompile Include="src\OptionsState.cpp" />
+    <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\SplashState.cpp" />
+    <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="Src\StateManager.cpp" />
+    <ClCompile Include="src\Tile.cpp" />
+    <ClCompile Include="src\TileMap.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

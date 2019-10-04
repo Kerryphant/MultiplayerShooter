@@ -1,6 +1,7 @@
 #include "..\include\MenuState.h"
 #include "..\include\StateManager.h"
 #include "..\include\Input.h"
+#include "..\include\Button.h"
 
 
 MenuState::MenuState()
@@ -13,6 +14,13 @@ MenuState::MenuState()
 
 	menu_view.setCenter(480, 300);
 	menu_view.setSize(sf::Vector2f(960, 600));
+
+	int button_spacing = 130;
+	for (int i = 0; i < 4; i++)
+	{
+		buttons[i] = new Button(280, 150 + (button_spacing * i));
+	}
+	
 }
 
 MenuState::~MenuState()
@@ -27,12 +35,35 @@ void MenuState::Init(sf::RenderWindow* hwnd_, Input* input_, StateManager* state
 	input_handler = input_;
 	state_manager = state_manager_;
 
-	sf::Socket::Status status = socket.connect("127.0.0.1", 5555);
-
-	if (status != sf::Socket::Done)
+	buttons[0]->setSprite("Media/Sprites/Menu/SoloButton.png");
+	buttons[0]->setAction([&]() -> void
 	{
-		printf("client failed to connect");
+		state_manager->changeState(StateManager::LEVEL);
 	}
+	);
+
+	buttons[1]->setSprite("Media/Sprites/Menu/MultiButton.png");
+	buttons[1]->setAction([&]() -> void
+	{
+		state_manager->changeState(StateManager::MULTI);
+	}
+	);
+
+	//options button
+	buttons[2]->setSprite("Media/Sprites/Menu/OptionsButton.png");
+	buttons[2]->setAction([&]() -> void
+	{
+		state_manager->changeState(StateManager::OPTIONS);
+	}
+	);
+
+	//exit button
+	buttons[3]->setSprite("Media/Sprites/Menu/ExitButton.png");
+	buttons[3]->setAction([&]() -> void
+	{
+		window->close();
+	}
+	);
 }
 
 void MenuState::CleanUp()
@@ -50,37 +81,25 @@ bool MenuState::HandleInput()
 		window->close();
 	}
 
+	if (input_handler->isMouseLeftDown())
+	{
+		//set to false to avoid mutiple clicks. We do this at the start in case of a state switch inside the for loop
+		input_handler->setMouseLeftDown(false);
+
+		//check all buttons for a click and take action
+		for(int i = 0; i < 4; i++)
+		{
+			buttons[i]->checkClick(cursor.getPosition().x, cursor.getPosition().y);
+		}
+		
+	}
+
 	return true;
 }
 
-bool MenuState::Update(float frame_time)
+bool MenuState::Update(float frame_time_)
 {
-	char data[5] = {'h', 'e', 'l', 'l', 'o'};
-
-	// TCP socket:
-	sf::Socket::Status error = socket.send(data, 5);
-	
-	if (error != sf::Socket::Done)
-	{
-		printf("sending failed\n");
-		switch (error)
-		{
-		case sf::Socket::NotReady:
-			printf("Socket not ready\n");
-			break;
-		case sf::Socket::Partial:
-			printf("Socket partial\n");
-			break;
-		case sf::Socket::Disconnected:
-			printf("Socket disconnected\n");
-			break;
-		case sf::Socket::Error:
-			printf("Socket ERROR\n");
-			break;
-		default:
-			break;
-		}
-	}
+	cursor.update(input_handler);
 
 	return true;
 }
@@ -91,6 +110,13 @@ void MenuState::Render()
 	window->clear(sf::Color::Black);
 
 	window->draw(background_shape);
+
+	for (int i = 0; i < 4; i++)
+	{
+		window->draw(*buttons[i]);
+	}
+
+	window->draw(cursor);
 
 	window->display();
 	//End of drawing

@@ -14,7 +14,7 @@ public:
 	void CleanUp();
 
 	bool HandleInput();
-	bool Update(float frame_time);
+	bool Update(float frame_time_);
 	void Render();
 
 private:

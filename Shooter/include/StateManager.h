@@ -2,6 +2,8 @@
 #include "..\include\SplashState.h"
 #include "..\include\MenuState.h"
 #include "..\include\LevelState.h"
+#include "..\include\MultiplayerState.h"
+#include "..\include\OptionsState.h"
 
 //Forward declaring SFML classes
 namespace sf
@@ -17,7 +19,7 @@ class StateManager
 {
 public:
 
-	enum States { LEVEL, MENU, SPLASH, END, CONTROLS};
+	enum States { SPLASH, MENU, LEVEL, MULTI, OPTIONS};
 
 	StateManager(sf::RenderWindow* hwnd_, Input* input_);
 	~StateManager();
@@ -40,4 +42,6 @@ private:
 	SplashState splash_state;
 	MenuState menu_state;
 	LevelState level_state;
+	MultiplayerState multiplayer_state;
+	OptionsState options_state;
 };

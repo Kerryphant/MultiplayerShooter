@@ -33,6 +33,12 @@ void StateManager::changeState(States new_state_)
 	case StateManager::LEVEL:
 		current_state = &level_state;
 		break;
+	case StateManager::MULTI:
+		current_state = &multiplayer_state;
+		break;
+	case StateManager::OPTIONS:
+		current_state = &options_state;
+		break;
 	default:
 		break;
 	}
