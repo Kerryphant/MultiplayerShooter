@@ -30,11 +30,11 @@ void StateManager::changeState(States new_state_)
 	case StateManager::MENU:
 		current_state = &menu_state;
 		break;
+	case StateManager::LOBBY:
+		current_state = &lobby_state;
+		break;
 	case StateManager::LEVEL:
 		current_state = &level_state;
-		break;
-	case StateManager::MULTI:
-		current_state = &multiplayer_state;
 		break;
 	case StateManager::OPTIONS:
 		current_state = &options_state;

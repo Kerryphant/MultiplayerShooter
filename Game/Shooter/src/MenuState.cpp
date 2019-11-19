@@ -45,7 +45,7 @@ void MenuState::Init(sf::RenderWindow* hwnd_, Input* input_, StateManager* state
 	buttons[1]->setSprite("Media/Sprites/Menu/MultiButton.png");
 	buttons[1]->setAction([&]() -> void
 	{
-		state_manager->changeState(StateManager::MULTI);
+		state_manager->changeState(StateManager::LOBBY);
 	}
 	);
 
