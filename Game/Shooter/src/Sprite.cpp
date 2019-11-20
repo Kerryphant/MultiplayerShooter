@@ -36,3 +36,10 @@ void Sprite::updateCollisionBox()
 	collisionBox.left = getPosition().x;
 	collisionBox.top = getPosition().y;
 }
+
+void Sprite::createTexture(std::string path_)
+{
+	texture.loadFromFile(path_);
+
+	setTexture(&texture);
+}

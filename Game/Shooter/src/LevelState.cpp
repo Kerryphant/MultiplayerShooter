@@ -25,7 +25,12 @@ void LevelState::Init(sf::RenderWindow* hwnd_, Input* input_, StateManager* stat
 	input_handler = input_;
 	state_manager = state_manager_;
 
-	player = new Player(input_handler);
+	player = new Player(input_handler, client->getID());
+
+	for (auto current : client->getPeers())
+	{
+		current.second->setUpTexture();
+	}
 }
 
 void LevelState::CleanUp()
@@ -51,6 +56,8 @@ bool LevelState::Update(float frame_time_)
 	player->update(frame_time_);
 	player->handleInput(frame_time_, window);
 
+	client->Update(player->getPosition());
+
 	return true;
 }
 
@@ -62,7 +69,21 @@ void LevelState::Render()
 	tileMap.drawMap();
 	window->draw(*player);
 
+	std::map<int, Peer*> temp_peers = client->getPeers();
+
+	for (auto current_peer : temp_peers)
+	{
+		if (current_peer.second->getID() >= 0 && current_peer.second->getID() != client->getID())
+		{	
+			window->draw(current_peer.second->getShape());
+		}
+	}
 
 	window->display();
 	//End of drawing
+}
+
+void LevelState::setClientPtr(Client* client_)
+{
+	client = client_;
 }

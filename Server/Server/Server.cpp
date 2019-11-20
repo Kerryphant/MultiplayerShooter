@@ -61,6 +61,7 @@ void Server::receiveMessage()
 		switch (message_type)
 		{
 		case NEW_CONNECTION:
+		{
 			printf("New connection\n");
 
 			if (num_connected_players <= 8)
@@ -74,7 +75,7 @@ void Server::receiveMessage()
 				num_connected_players++;
 
 				connected_players.insert(std::pair<int, PlayerConnection*>(num_connected_players - 1, new_player));
-			
+
 				//send confirmation to new player
 				sf::Packet new_player_pack;
 				new_player_pack << MessageType::NEW_CONNECTION;
@@ -137,14 +138,28 @@ void Server::receiveMessage()
 			}
 
 			break;
+		}
 		case PLAYER_UPDATE:
+		{
 			printf("Player update\n");
+			int temp_ID;
+			sf::Vector2f temp_position;
+			
+			recvPack >> temp_ID;
+			recvPack >> temp_position.x;
+			recvPack >> temp_position.y;
+
+			connected_players[temp_ID]->setPosition(temp_position);
+
 			break;
+		}
 		case PLAYER_DISCONNECT:
+		{
 			printf("Player disconnected\n");
 			break;
+		}
 		case LOBBY_UPDATE:
-
+		{
 			int client_ID;
 			bool ready;
 
@@ -156,6 +171,7 @@ void Server::receiveMessage()
 
 
 			break;
+		}
 		default:
 			printf("unexpected receive\n");
 			break;
@@ -168,37 +184,41 @@ void Server::receiveMessage()
 		//printf("No incoming messages\n");
 	}
 
-	bool allReady = true;
-
-	for (int i = 0; i < num_connected_players; i++)
+	//check for game start condition
+	if (lobby_mode)
 	{
-		if (connected_players[i]->getReady() == false)
+		bool allReady = true;
+
+		for (int i = 0; i < num_connected_players; i++)
 		{
-			allReady = false;
+			if (connected_players[i]->getReady() == false)
+			{
+				allReady = false;
+			}
+		}
+
+		if (allReady && num_connected_players > 1)
+		{
+			sf::Packet start_packet;
+			start_packet << MessageType::GAME_STARTING;
+
+			for (auto current_player : connected_players)
+			{
+				if (socket.send(start_packet, current_player.second->getAddress(), current_player.second->getPort()) != sf::Socket::Done)
+				{
+					printf("failed to tell %i to start \n", current_player.second->getID());
+				}
+				else
+				{
+					printf("sent start to %i \n", current_player.second->getID());
+					lobby_mode = false;
+				}
+			}
 		}
 	}
 	
-	if (allReady && num_connected_players > 1)
-	{
-		sf::Packet start_packet;
-		start_packet << MessageType::GAME_STARTING;
-
-		for (auto current_player : connected_players)
-		{
-			if (socket.send(start_packet, current_player.second->getAddress(), current_player.second->getPort()) != sf::Socket::Done)
-			{
-				printf("failed to tell %i to start \n", current_player.second->getID());
-			}
-			else
-			{
-				printf("sent start to %i \n", current_player.second->getID());
-				lobby_mode = false;
-			}
-		}
-	}
 }
 	
-
 void Server::sendClientUpdates(float dt_)
 {
 	//if no win condition, send out updates to clients
@@ -267,6 +287,7 @@ void Server::sendClientUpdates(float dt_)
 				sf::Packet sendPack;
 
 				sendPack << MessageType::PLAYER_UPDATE;
+				sendPack << num_connected_players;
 
 				for (auto current_player : connected_players)
 				{
@@ -277,6 +298,18 @@ void Server::sendClientUpdates(float dt_)
 				{
 					sendPack << current_player.second->getPosition().x;
 					sendPack << current_player.second->getPosition().y;
+				}
+
+				for (auto current_player : connected_players)
+				{
+					if (socket.send(sendPack, current_player.second->getAddress(), current_player.second->getPort()) != sf::Socket::Done)
+					{
+						printf("lobby update to %i failed \n", current_player.second->getID());
+					}
+					else
+					{
+						//printf("sent update to %i \n", current_player.second->getID());
+					}
 				}
 			}
 

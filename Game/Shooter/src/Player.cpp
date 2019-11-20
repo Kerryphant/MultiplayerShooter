@@ -1,10 +1,14 @@
 #include "..\include\Player.h"
 
-Player::Player(Input* input_) : Sprite(), health(100), move_speed(300.f), flipped(false), current_animation(nullptr)
+Player::Player(Input* input_, int ID_) : Sprite(), health(100), move_speed(300.f), flipped(false), current_animation(nullptr)
 {
 	input = input_;
 
-	texture.loadFromFile("Media/Sprites/Character/CharacterSpriteSheet.png");
+	std::string path = "Media/Sprites/Character/";
+	path += std::to_string(ID_);
+	path += "Char.png";
+
+	texture.loadFromFile(path);
 
 	setTexture(&texture);
 	setSize(sf::Vector2f(51, 64));

@@ -5,6 +5,7 @@
 
 #include "..\include\Player.h"
 #include "..\include\TileMap.h"
+#include "..\include\Client.h"
 
 class LevelState : public IState
 {
@@ -20,9 +21,13 @@ public:
 	bool Update(float frame_time_);
 	void Render();
 
+	void setClientPtr(Client* client_);
+
 private:
 	sf::View initialView;
 
 	Player* player;
 	TileMap tileMap;
+
+	Client* client;
 };

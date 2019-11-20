@@ -14,6 +14,7 @@ namespace sf
 //Forward declaring my own classes
 class Input;
 class IState;
+class Client;
 
 class StateManager
 {
@@ -27,7 +28,7 @@ public:
 	void changeState(States state_);
 	IState* getCurrentState();
 
-
+	void setClientPtr(Client* client_);
 
 private:
 

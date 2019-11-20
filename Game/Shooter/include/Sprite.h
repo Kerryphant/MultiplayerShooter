@@ -43,9 +43,10 @@ public:
 	//input component
 	void setInput(Input* in_) { input = in_; };
 
-	
+	void createTexture(std::string path_);
 
 protected:
+
 	//Sprite properties
 	sf::Vector2f velocity;
 	bool alive; //tracks if the sprite is alive and active on the screen. Used to decide on rendering ect

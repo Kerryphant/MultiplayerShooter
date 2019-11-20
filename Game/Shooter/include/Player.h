@@ -9,7 +9,7 @@ class Player : public Sprite
 {
 public:
 
-	Player(Input* input_);
+	Player(Input* input_, int ID_);
 	~Player();
 
 	void update(float frame_time_);

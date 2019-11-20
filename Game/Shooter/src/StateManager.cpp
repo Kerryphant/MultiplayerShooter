@@ -1,5 +1,6 @@
 #include "..\include\StateManager.h"
 #include "..\include\IState.h"
+#include "..\include\Client.h"
 
 StateManager::StateManager(sf::RenderWindow* hwnd_, Input* input_) : score(0), victory(0), window(nullptr), input(nullptr), current_state(nullptr)
 {
@@ -49,4 +50,9 @@ void StateManager::changeState(States new_state_)
 IState* StateManager::getCurrentState()
 {
 	return current_state;
+}
+
+void StateManager::setClientPtr(Client* client_)
+{
+	level_state.setClientPtr(client_);
 }
