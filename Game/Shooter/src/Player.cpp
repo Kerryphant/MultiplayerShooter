@@ -125,12 +125,6 @@ void Player::handleInput(float frame_time_, sf::RenderWindow* window_)
 		setTextureRect(current_animation->getCurrentFrame());
 	}
 
-	//if the player shoots
-	if (input->isMouseLeftDown())
-	{
-		/*bulRequester->requestBullet(bulRequester->PLAYER, getPosition().x + 32, getPosition().y + 32, false);
-		input->setMouseLeftDown(false);*/
-	}
 }
 
 void Player::takeDamage(int amount_)

@@ -20,7 +20,7 @@ public:
 	void setPosition(sf::Vector2f position_);
 
 	void setUpTexture();
-	void updateAnimation(float frame_time_);
+	void updateSprite(float frame_time_);
 	Sprite getShape();
 
 private:

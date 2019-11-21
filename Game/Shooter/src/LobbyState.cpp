@@ -79,7 +79,7 @@ bool LobbyState::HandleInput()
 	return true;
 }
 
-bool LobbyState::Update(float frame_time_)
+bool LobbyState::Update(unsigned int w_, unsigned int h_, float frame_time_)
 {
 	cursor.update(input_handler);
 

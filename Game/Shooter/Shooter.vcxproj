@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Animation.h" />
+    <ClInclude Include="include\Bullet.h" />
+    <ClInclude Include="include\BulletManager.h" />
     <ClInclude Include="include\Button.h" />
     <ClInclude Include="include\Client.h" />
     <ClInclude Include="include\Cursor.h" />
@@ -36,10 +38,13 @@
     <ClInclude Include="Include\StateManager.h" />
     <ClInclude Include="include\Tile.h" />
     <ClInclude Include="include\TileMap.h" />
+    <ClInclude Include="include\Vector.h" />
     <ClInclude Include="PlayerMessage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Animation.cpp" />
+    <ClCompile Include="src\Bullet.cpp" />
+    <ClCompile Include="src\BulletManager.cpp" />
     <ClCompile Include="src\Button.cpp" />
     <ClCompile Include="src\Client.cpp" />
     <ClCompile Include="src\Cursor.cpp" />
@@ -56,6 +61,7 @@
     <ClCompile Include="Src\StateManager.cpp" />
     <ClCompile Include="src\Tile.cpp" />
     <ClCompile Include="src\TileMap.cpp" />
+    <ClCompile Include="src\Vector.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

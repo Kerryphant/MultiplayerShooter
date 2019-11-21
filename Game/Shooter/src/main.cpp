@@ -88,7 +88,7 @@ void main()
 
 		//combined contains handle input, update, and render functions in that order
 		state_manager.getCurrentState()->HandleInput();
-		state_manager.getCurrentState()->Update(delta_time);
+		state_manager.getCurrentState()->Update(width, height, delta_time);
 		state_manager.getCurrentState()->Render();
 	}
 

@@ -5,6 +5,7 @@
 #include "..\include\Peer.h"
 
 class StateManager;
+class Bullet;
 
 class Client
 {
@@ -22,12 +23,17 @@ public:
 	bool getReady();
 	void toggleReady();
 
+	void sendBulletInfo(sf::Vector2f start_pos_, sf::Vector2f velocity_, float rotation_angle_);
+
 	int getID();
+
+	std::vector<Bullet*> getBullets();
+	void clearBullets();
 
 	std::map<int, Peer*> getPeers();
 
 private:
-	enum MessageType { NEW_CONNECTION, PLAYER_UPDATE, PLAYER_DISCONNECT, LOBBY_UPDATE, GAME_STARTING, NEW_CONNECT_REJECT, ADD_PEER };
+	enum MessageType { NEW_CONNECTION, PLAYER_UPDATE, PLAYER_DISCONNECT, LOBBY_UPDATE, GAME_STARTING, NEW_CONNECT_REJECT, ADD_PEER, NEW_BULLET };
 	
 	int client_ID;
 	sf::Vector2f position;
@@ -38,6 +44,7 @@ private:
 
 	int num_peers;
 	std::map<int, Peer*> peers;
+	std::vector<Bullet*> bullets;
 
 	// Local network info
 	sf::UdpSocket local_sock;

@@ -141,7 +141,6 @@ void Server::receiveMessage()
 		}
 		case PLAYER_UPDATE:
 		{
-			printf("Player update\n");
 			int temp_ID;
 			sf::Vector2f temp_position;
 			
@@ -171,6 +170,20 @@ void Server::receiveMessage()
 
 
 			break;
+		}
+		case NEW_BULLET:
+		{
+			BulletInfo temp_info;
+
+			recvPack >> temp_info.position.x;
+			recvPack >> temp_info.position.y;
+			
+			recvPack >> temp_info.velocity.x;
+			recvPack >> temp_info.velocity.y;
+
+			recvPack >> temp_info.angle;
+
+			bullets.push_back(temp_info);
 		}
 		default:
 			printf("unexpected receive\n");
@@ -300,15 +313,26 @@ void Server::sendClientUpdates(float dt_)
 					sendPack << current_player.second->getPosition().y;
 				}
 
+				sendPack << bullets.size();
+
+				for (auto current_bullet : bullets)
+				{
+					sendPack << current_bullet.position.x;
+					sendPack << current_bullet.position.y;
+
+					sendPack << current_bullet.velocity.x;
+					sendPack << current_bullet.velocity.y;
+
+					sendPack << current_bullet.angle;
+				}
+				
+				bullets.clear();
+
 				for (auto current_player : connected_players)
 				{
 					if (socket.send(sendPack, current_player.second->getAddress(), current_player.second->getPort()) != sf::Socket::Done)
 					{
 						printf("lobby update to %i failed \n", current_player.second->getID());
-					}
-					else
-					{
-						//printf("sent update to %i \n", current_player.second->getID());
 					}
 				}
 			}

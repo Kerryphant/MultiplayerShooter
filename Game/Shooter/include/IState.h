@@ -20,7 +20,7 @@ public:
 	virtual void CleanUp() = 0;
 	
 	virtual bool HandleInput() = 0;
-	virtual bool Update(float frame_time) = 0;
+	virtual bool Update(unsigned int w_, unsigned int h_, float frame_time) = 0;
 	virtual void Render() = 0;
 
 	//state this_state;

@@ -72,13 +72,15 @@ void Peer::setUpTexture()
 	sprite.setPosition(position);
 }
 
-void Peer::updateAnimation(float frame_time_)
+void Peer::updateSprite(float frame_time_)
 {
 	current_animation->animate(frame_time_);
 
 	sprite.setTextureRect(current_animation->getCurrentFrame());
 	stand.setFlipped(flipped);
 	current_animation = &stand;
+
+	sprite.updateCollisionBox();
 }
 
 Sprite Peer::getShape()

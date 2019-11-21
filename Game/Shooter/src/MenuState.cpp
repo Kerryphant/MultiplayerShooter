@@ -16,7 +16,7 @@ MenuState::MenuState()
 	menu_view.setSize(sf::Vector2f(960, 600));
 
 	int button_spacing = 130;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		buttons[i] = new Button(280, 150 + (button_spacing * i));
 	}
@@ -38,28 +38,13 @@ void MenuState::Init(sf::RenderWindow* hwnd_, Input* input_, StateManager* state
 	buttons[0]->setSprite("Media/Sprites/Menu/SoloButton.png");
 	buttons[0]->setAction([&]() -> void
 	{
-		state_manager->changeState(StateManager::LEVEL);
-	}
-	);
-
-	buttons[1]->setSprite("Media/Sprites/Menu/MultiButton.png");
-	buttons[1]->setAction([&]() -> void
-	{
 		state_manager->changeState(StateManager::LOBBY);
 	}
 	);
 
-	//options button
-	buttons[2]->setSprite("Media/Sprites/Menu/OptionsButton.png");
-	buttons[2]->setAction([&]() -> void
-	{
-		state_manager->changeState(StateManager::OPTIONS);
-	}
-	);
-
 	//exit button
-	buttons[3]->setSprite("Media/Sprites/Menu/ExitButton.png");
-	buttons[3]->setAction([&]() -> void
+	buttons[1]->setSprite("Media/Sprites/Menu/ExitButton.png");
+	buttons[1]->setAction([&]() -> void
 	{
 		window->close();
 	}
@@ -87,7 +72,7 @@ bool MenuState::HandleInput()
 		input_handler->setMouseLeftDown(false);
 
 		//check all buttons for a click and take action
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < 2; i++)
 		{
 			buttons[i]->checkClick(cursor.getPosition().x, cursor.getPosition().y);
 		}
@@ -97,7 +82,7 @@ bool MenuState::HandleInput()
 	return true;
 }
 
-bool MenuState::Update(float frame_time_)
+bool MenuState::Update(unsigned int w_, unsigned int h_, float frame_time_)
 {
 	cursor.update(input_handler);
 
@@ -111,7 +96,7 @@ void MenuState::Render()
 
 	window->draw(background_shape);
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		window->draw(*buttons[i]);
 	}

@@ -6,6 +6,8 @@
 #include "..\include\Player.h"
 #include "..\include\TileMap.h"
 #include "..\include\Client.h"
+#include "..\include\BulletManager.h"
+#include "..\include\Cursor.h"
 
 class LevelState : public IState
 {
@@ -18,16 +20,18 @@ public:
 	void CleanUp();
 
 	bool HandleInput();
-	bool Update(float frame_time_);
+	bool Update(unsigned int w_, unsigned int h_, float frame_time_);
 	void Render();
 
 	void setClientPtr(Client* client_);
 
 private:
 	sf::View initialView;
+	Cursor cursor;
 
 	Player* player;
 	TileMap tileMap;
-
+	
 	Client* client;
+	BulletManager* bullet_manager;
 };

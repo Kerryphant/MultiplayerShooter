@@ -50,7 +50,7 @@ bool SplashState::HandleInput()
 	return true;
 }
 
-bool SplashState::Update(float frame_time_)
+bool SplashState::Update(unsigned int w_, unsigned int h_, float frame_time_)
 {
 	
 

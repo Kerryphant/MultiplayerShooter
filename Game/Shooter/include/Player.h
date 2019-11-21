@@ -5,6 +5,8 @@
 #include "..\include\Sprite.h"
 #include "..\include\Animation.h"
 
+class Cursor;
+
 class Player : public Sprite
 {
 public:
@@ -17,7 +19,6 @@ public:
 	void takeDamage(int amount_);
 
 private:
-
 	int health;
 	float move_speed;
 	bool flipped;

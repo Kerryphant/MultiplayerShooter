@@ -10,6 +10,11 @@ LevelState::LevelState()
 
 	tileMap.loadMapFile("media/maps/map.txt");
 	tileMap.setMap();
+
+	bullet_manager = new BulletManager();
+
+	sf::Mouse::setPosition(sf::Vector2i(0, 0));
+	cursor.changeTexture(Cursor::TARGET);
 }
 
 LevelState::~LevelState()
@@ -26,6 +31,7 @@ void LevelState::Init(sf::RenderWindow* hwnd_, Input* input_, StateManager* stat
 	state_manager = state_manager_;
 
 	player = new Player(input_handler, client->getID());
+	player->setAlive(true);
 
 	for (auto current : client->getPeers())
 	{
@@ -48,13 +54,25 @@ bool LevelState::HandleInput()
 		window->close();
 	}
 
+	//if the player shoots
+	if (input_handler->isMouseLeftDown())
+	{
+		bullet_manager->createNewBullet(cursor.getPosition(), player->getPosition(), client);
+		input_handler->setMouseLeftDown(false);
+	}
+
 	return true;
 }
 
-bool LevelState::Update(float frame_time_)
+bool LevelState::Update(unsigned int w_, unsigned int h_, float frame_time_)
 {
+	//cursor.update(input_handler);
+	cursor.setPosition(player->getPosition().x + input_handler->getMouseX() - (w_ / 2.0f), player->getPosition().y + input_handler->getMouseY() - (h_ / 2.0f));
+
 	player->update(frame_time_);
 	player->handleInput(frame_time_, window);
+
+	bullet_manager->updateBullets(frame_time_, client);
 
 	client->Update(player->getPosition());
 
@@ -78,6 +96,10 @@ void LevelState::Render()
 			window->draw(current_peer.second->getShape());
 		}
 	}
+
+	bullet_manager->renderBullets(window);
+
+	window->draw(cursor);
 
 	window->display();
 	//End of drawing

@@ -39,7 +39,7 @@ bool OptionsState::HandleInput()
 	return true;
 }
 
-bool OptionsState::Update(float frame_time_)
+bool OptionsState::Update(unsigned int w_, unsigned int h_, float frame_time_)
 {
 	return true;
 }

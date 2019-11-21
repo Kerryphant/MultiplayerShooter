@@ -2,6 +2,7 @@
 
 #include <thread>
 #include "..\include\StateManager.h"
+#include "..\include\Bullet.h"
 
 Client::Client() : ready(false), client_ID(-1), num_peers(0), tick(0), dt(0), change_to_level(false), lobby_mode(true)
 {
@@ -50,7 +51,7 @@ bool Client::Update(sf::Vector2f position_)
 
 	for (auto current : peers)
 	{
-		current.second->updateAnimation(dt);
+		current.second->updateSprite(dt);
 	}
 
 	return true;
@@ -85,9 +86,37 @@ void Client::toggleReady()
 	ready = !ready;
 }
 
+void Client::sendBulletInfo(sf::Vector2f start_pos_, sf::Vector2f velocity_, float rotation_angle_)
+{
+	sf::Packet bullet_packet;
+
+	bullet_packet << MessageType::NEW_BULLET;
+
+	bullet_packet << start_pos_.x;
+	bullet_packet << start_pos_.y;
+
+	bullet_packet << velocity_.x;
+	bullet_packet << velocity_.y;
+
+	bullet_packet << rotation_angle_;
+
+	sf::Socket::Status send_error;
+	send_error = local_sock.send(bullet_packet, server_addr, server_port);
+}
+
 int Client::getID()
 {
 	return client_ID;
+}
+
+std::vector<Bullet*> Client::getBullets()
+{
+	return bullets;
+}
+
+void Client::clearBullets()
+{
+	bullets.clear();
 }
 
 std::map<int, Peer*> Client::getPeers()
@@ -309,6 +338,31 @@ void Client::ReceiveMessage()
 			recv_pack >> temp_position.x;
 			recv_pack >> temp_position.y;
 			peers[temp_id_order[i]]->setPosition(temp_position);
+		}
+
+		unsigned int num_bullets;
+		recv_pack >> num_bullets;
+
+		for (int i = 0; i < num_bullets; i++)
+		{
+			Bullet* temp_bullet = new Bullet();
+			sf::Vector2f temp_pos;
+			sf::Vector2f temp_velocity;
+			float temp_angle;
+
+			recv_pack >> temp_pos.x;
+			recv_pack >> temp_pos.y;
+
+			recv_pack >> temp_velocity.x;
+			recv_pack >> temp_velocity.y;
+			 
+			recv_pack >> temp_angle;
+
+			temp_bullet->setPosition(temp_pos);
+			temp_bullet->setVelocity(temp_velocity);
+			temp_bullet->setRotation(temp_angle);
+
+			bullets.push_back(temp_bullet);
 		}
 
 		break;
