@@ -10,6 +10,7 @@ LobbyState::LobbyState()
 
 	ready_texture.loadFromFile("Media/Sprites/ReadyButton2.png");
 	unready_texture.loadFromFile("Media/Sprites/ReadyButton.png");
+	back_texture.loadFromFile("Media/Sprites/BackButton.png");
 
 	background_shape.setTexture(&background_texture);
 	background_shape.setSize(sf::Vector2f(960, 600));
@@ -23,8 +24,7 @@ LobbyState::LobbyState()
 	multiplayer_view.setSize(sf::Vector2f(960, 600));
 
 	ready_button = new Button(660, 120);
-
-	client = new Client();
+	back_button = new Button(50, 550);
 }
 
 LobbyState::~LobbyState()
@@ -39,7 +39,7 @@ void LobbyState::Init(sf::RenderWindow* hwnd_, Input* input_, StateManager* stat
 	input_handler = input_;
 	state_manager = state_manager_;
 
-	
+	client = new Client();
 	client->Init(state_manager);
 
 	ready_button->setSprite("Media/Sprites/ReadyButton.png");
@@ -50,6 +50,18 @@ void LobbyState::Init(sf::RenderWindow* hwnd_, Input* input_, StateManager* stat
 	}
 	);
 	ready_button->setSize(sf::Vector2f(200,50));
+
+
+	back_button->setSprite("Media/Sprites/BackButton.png");
+	back_button->setAction([&]() -> void
+	{
+		client->disconnect();
+		delete client;
+		client = nullptr;
+		state_manager->changeState(StateManager::MENU);
+	}
+	);
+	back_button->setSize(sf::Vector2f(100, 25));
 }
 
 void LobbyState::CleanUp()
@@ -74,6 +86,7 @@ bool LobbyState::HandleInput()
 
 		//check all buttons for a click and take action
 		ready_button->checkClick(cursor.getPosition().x, cursor.getPosition().y);
+		back_button->checkClick(cursor.getPosition().x, cursor.getPosition().y);
 	}
 
 	return true;
@@ -98,6 +111,8 @@ void LobbyState::Render()
 	window->clear(sf::Color::Black);
 
 	window->draw(background_shape);
+
+	window->draw(*back_button);
 
 	int ready_spacing = 60;
 	int count = 0;
@@ -135,9 +150,6 @@ void LobbyState::Render()
 			window->draw(ready_shape);
 			count++;
 		}
-		
-		
-
 	}
 
 	window->draw(cursor);

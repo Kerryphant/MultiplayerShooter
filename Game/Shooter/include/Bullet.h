@@ -19,8 +19,14 @@ public:
 	void changeTexture(BulletTexture tex_);
 	float getUpdateCounter() { return updateCounter; }
 	void setUpdateCounter(float value_) { updateCounter = value_; }
+	
+	
+	void setIsEnemy(bool enemy);
+	bool getIsEnemy();
 
 private:
+
+	BulletTexture current_tex;
 
 	sf::Texture blue;
 	sf::Texture red;

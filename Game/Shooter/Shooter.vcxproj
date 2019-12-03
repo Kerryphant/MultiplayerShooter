@@ -24,6 +24,7 @@
     <ClInclude Include="include\BulletManager.h" />
     <ClInclude Include="include\Button.h" />
     <ClInclude Include="include\Client.h" />
+    <ClInclude Include="include\Collision.h" />
     <ClInclude Include="include\Cursor.h" />
     <ClInclude Include="include\Input.h" />
     <ClInclude Include="include\IState.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="src\BulletManager.cpp" />
     <ClCompile Include="src\Button.cpp" />
     <ClCompile Include="src\Client.cpp" />
+    <ClCompile Include="src\Collision.cpp" />
     <ClCompile Include="src\Cursor.cpp" />
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\LevelState.cpp" />

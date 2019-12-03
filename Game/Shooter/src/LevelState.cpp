@@ -1,6 +1,7 @@
 #include "..\include\LevelState.h"
 #include "..\include\StateManager.h"
 #include "..\include\Input.h"
+#include "..\include\Collision.h"
 
 LevelState::LevelState()
 {
@@ -13,7 +14,7 @@ LevelState::LevelState()
 
 	bullet_manager = new BulletManager();
 
-	sf::Mouse::setPosition(sf::Vector2i(0, 0));
+	//sf::Mouse::setPosition(sf::Vector2i(0, 0));
 	cursor.changeTexture(Cursor::TARGET);
 }
 
@@ -74,6 +75,8 @@ bool LevelState::Update(unsigned int w_, unsigned int h_, float frame_time_)
 
 	bullet_manager->updateBullets(frame_time_, client);
 
+	checkCollisions();
+
 	client->Update(player->getPosition());
 
 	return true;
@@ -108,4 +111,76 @@ void LevelState::Render()
 void LevelState::setClientPtr(Client* client_)
 {
 	client = client_;
+}
+
+void LevelState::checkCollisions()
+{
+	std::vector<Bullet*> temp_bullets = bullet_manager->getBullets();
+
+	for (Bullet* current_bullet : temp_bullets)
+	{
+		if(current_bullet->isAlive())
+		{
+			if (current_bullet->getIsEnemy() && Collision::checkBoundingBox(player, current_bullet))
+			{
+				printf("collided with player \n");
+				current_bullet->setAlive(false);
+				player->takeDamage(1);
+				//score -= 20;
+			}
+			else if (!current_bullet->getIsEnemy())
+			{
+				std::map<int, Peer*> temp_peers = client->getPeers();
+				for (auto current_peer : temp_peers)
+				{
+					if (current_peer.second->getID() != client->getID() && Collision::checkBoundingBox(&(current_peer.second->getShape()), current_bullet))
+					{
+						printf("collided with ID %i\n" , current_peer.second->getID());
+						current_bullet->setAlive(false);
+					}
+				}
+			}	
+		}
+
+		//trying to avoid looping the whole map if not needed
+		if (current_bullet->isAlive())
+		{
+			for (Tile* tile : tileMap.getTileMap())
+			{
+				if (current_bullet->isAlive() && tile->getIsWall() && Collision::checkBoundingBox(tile, current_bullet))
+				{
+					current_bullet->setAlive(false);
+				}
+			}
+		}
+		
+	}
+
+	//check player against walls
+	for (Tile* tile : tileMap.getTileMap())
+	{
+		if (tile->getIsWall() && Collision::checkBoundingBox(tile, player))
+		{
+			if (tile->getTileType() == Tile::TOP)
+			{
+				//Move down
+				player->setPosition(player->getPosition().x, tile->getPosition().y + 65);
+			}
+			else if (tile->getTileType() == Tile::BOTTOM)
+			{
+				//Move up
+				player->setPosition(player->getPosition().x, tile->getPosition().y - 65);
+			}
+			else if (tile->getTileType() == Tile::LEFT)
+			{
+				//Move right
+				player->setPosition(tile->getPosition().x + 65, player->getPosition().y);
+			}
+			else if (tile->getTileType() == Tile::RIGHT)
+			{
+				//Move left
+				player->setPosition(tile->getPosition().x - 65, player->getPosition().y);
+			}
+		}
+	}
 }

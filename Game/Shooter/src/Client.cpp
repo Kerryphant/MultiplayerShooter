@@ -4,7 +4,7 @@
 #include "..\include\StateManager.h"
 #include "..\include\Bullet.h"
 
-Client::Client() : ready(false), client_ID(-1), num_peers(0), tick(0), dt(0), change_to_level(false), lobby_mode(true)
+Client::Client() : ready(false), client_ID(-1), num_peers(0), tick(0), dt(0), change_to_level(false), lobby_mode(true), game_time(0)
 {
 }
 
@@ -40,6 +40,7 @@ bool Client::Update(sf::Vector2f position_)
 
 	float dt = clock.restart().asSeconds();
 	tick += dt;
+	game_time += dt;
 
 	ReceiveMessage();
 
@@ -52,6 +53,30 @@ bool Client::Update(sf::Vector2f position_)
 	for (auto current : peers)
 	{
 		current.second->updateSprite(dt);
+		current.second->cleanMessages();
+		if (!current.second->getRecievedThisFrame() && !current.second->getLerping())
+		{
+			current.second->predictPosition(game_time);
+		}
+		
+		if (current.second->getLerping())
+		{
+			sf::Vector2f next_pos;
+			next_pos = lerp(current.second->getPosition(), current.second->getLerpTarget(), current.second->lerp_t_val += 0.05);
+			current.second->setPosition(next_pos);
+			
+			if (current.second->getPosition() == current.second->getLerpTarget() || current.second->lerp_t_val == 1)
+			{
+				current.second->setLerping(false);
+			}
+			//if ((current.second->getPosition().x <= current.second->getLerpTarget().x + 0.5) && (current.second->getPosition().x >= current.second->getLerpTarget().x - 0.5)  && (current.second->getPosition().y <= current.second->getLerpTarget().y + 0.5) && (current.second->getPosition().y >= current.second->getLerpTarget().y- 0.5))
+			//{
+			//	current.second->setLerping(false);
+			//}
+		}
+
+		current.second->setRecievedThisFrame(false);
+
 	}
 
 	return true;
@@ -65,7 +90,6 @@ void Client::Init(StateManager* state_manager_)
 	server_addr = "127.0.0.1";
 	server_port = 4444;
 
-	//sf::Socket::Status status = socket.connect("127.0.0.1", 5555);
 	if (local_sock.bind(sf::Socket::AnyPort, local_addr) != sf::Socket::Done)
 	{
 		std::printf("Socket did not bind\n");
@@ -74,6 +98,15 @@ void Client::Init(StateManager* state_manager_)
 
 	// Join by pinging server
 	JoinServer(&local_sock, server_addr, server_port);
+}
+
+void Client::disconnect()
+{
+	sf::Packet disconnect_packet;
+	disconnect_packet << MessageType::PLAYER_DISCONNECT;
+	disconnect_packet << client_ID;
+	
+	local_sock.send(disconnect_packet, server_addr, server_port);
 }
 
 bool Client::getReady()
@@ -92,6 +125,8 @@ void Client::sendBulletInfo(sf::Vector2f start_pos_, sf::Vector2f velocity_, flo
 
 	bullet_packet << MessageType::NEW_BULLET;
 
+	bullet_packet << client_ID;
+
 	bullet_packet << start_pos_.x;
 	bullet_packet << start_pos_.y;
 
@@ -102,6 +137,8 @@ void Client::sendBulletInfo(sf::Vector2f start_pos_, sf::Vector2f velocity_, flo
 
 	sf::Socket::Status send_error;
 	send_error = local_sock.send(bullet_packet, server_addr, server_port);
+
+
 }
 
 int Client::getID()
@@ -199,9 +236,16 @@ void Client::JoinServer(sf::UdpSocket* sock_, sf::IpAddress addr_, unsigned shor
 			{
 				int temp_peer_ID;
 				new_connection_pack >> temp_peer_ID;
-				Peer* temp_peer = new Peer();
-				temp_peer->setID(temp_peer_ID);
-				peers.insert(std::pair<int, Peer*>(temp_peer_ID, temp_peer));
+				
+				if (temp_peer_ID != client_ID)
+				{
+					Peer* temp_peer = new Peer();
+					temp_peer->setID(temp_peer_ID);
+					temp_peer->setPosition(sf::Vector2f(100, 100));
+					printf("join server %i\n", temp_peer_ID);
+					peers.insert(std::pair<int, Peer*>(temp_peer_ID, temp_peer));
+				}
+				
 			}
 
 			local_sock.setBlocking(false);
@@ -252,8 +296,12 @@ void Client::ReceiveMessage()
 
 			//assign it it's ID
 			recv_pack >> temp_peer_ID;
-			new_peer->setID(temp_peer_ID);
-			peers.insert(std::pair<int, Peer*>(temp_peer_ID, new_peer));
+			if (temp_peer_ID != client_ID)
+			{
+				new_peer->setID(temp_peer_ID);
+				printf("NEW_CONNECTION %i\n", temp_peer_ID);
+				peers.insert(std::pair<int, Peer*>(temp_peer_ID, new_peer));
+			}
 		}
 
 		//assign each peer their ready value
@@ -267,77 +315,47 @@ void Client::ReceiveMessage()
 
 		break;
 	}
-	case GAME_STARTING:
-	{
-		change_to_level = true;
-		lobby_mode = false;
-		for (auto current : peers)
-		{
-			current.second->setUpTexture();
-		}
-	}
-	case ADD_PEER:
-	{
-		Peer* temp_peer = new Peer();
-		int temp_id;
-		recv_pack >> temp_id;
-		temp_peer->setID(temp_id);
-		temp_peer->setReady(false);
-
-		peers.insert(std::pair<int, Peer*>(temp_id, temp_peer));
-
-		break;
-	}
-	case LOBBY_UPDATE:
-	{
-		int temp_num;
-		recv_pack >> temp_num;
-		std::vector<int> temp_id_order;
-
-		num_peers = temp_num;
-
-		for (int i = 0; i < num_peers; i++)
-		{
-			int temp_ID;
-			recv_pack >> temp_ID;
-			temp_id_order.push_back(temp_ID);
-		}
-
-		bool temp_ready = false;
-		for (int i = 0; i < num_peers; i++)
-		{
-			recv_pack >> temp_ready;
-			peers[temp_id_order[i]]->setReady(temp_ready);
-		}
-
-		break;
-	}
-	case PLAYER_DISCONNECT:
-	{
-
-		break;
-	}
 	case PLAYER_UPDATE:
 	{
 		int temp_num;
-		recv_pack >> temp_num;
-		std::vector<int> temp_id_order;
+		sf::Vector2f temp_position;
 
+		recv_pack >> temp_num;
 		num_peers = temp_num;
 
 		for (int i = 0; i < num_peers; i++)
 		{
 			int temp_ID;
 			recv_pack >> temp_ID;
-			temp_id_order.push_back(temp_ID);
-		}
 
-		sf::Vector2f temp_position;
-		for (int i = 0; i < num_peers; i++)
-		{
+			float temp_time;
+			recv_pack >> temp_time;
 			recv_pack >> temp_position.x;
 			recv_pack >> temp_position.y;
-			peers[temp_id_order[i]]->setPosition(temp_position);
+
+			if (peers.find(temp_ID) != peers.end() && temp_ID != client_ID)
+			{
+				if (peers[temp_ID]->getLastPackeTime() <= temp_time)
+				{
+					if (peers[temp_ID]->getPosition() != temp_position)
+					{
+						peers[temp_ID]->setLerping(true);
+						peers[temp_ID]->setLerpTarget(temp_position);
+						peers[temp_ID]->lerp_t_val = 0;
+					}
+					else
+					{
+						peers[temp_ID]->setPosition(temp_position);
+					}
+					peers[temp_ID]->storeMessage(temp_position.x, temp_position.y, temp_time);
+					peers[temp_ID]->setRecievedThisFrame(true);
+					peers[temp_ID]->setLastPacketTime(temp_time);
+				}
+				else
+				{
+					printf("Out of order update from ID %i\n", temp_ID);
+				}
+			}
 		}
 
 		unsigned int num_bullets;
@@ -349,21 +367,94 @@ void Client::ReceiveMessage()
 			sf::Vector2f temp_pos;
 			sf::Vector2f temp_velocity;
 			float temp_angle;
+			int temp_ID;
+
+			recv_pack >> temp_ID;
 
 			recv_pack >> temp_pos.x;
 			recv_pack >> temp_pos.y;
 
 			recv_pack >> temp_velocity.x;
 			recv_pack >> temp_velocity.y;
-			 
+
 			recv_pack >> temp_angle;
 
 			temp_bullet->setPosition(temp_pos);
 			temp_bullet->setVelocity(temp_velocity);
 			temp_bullet->setRotation(temp_angle);
 
-			bullets.push_back(temp_bullet);
+			temp_bullet->setAlive(true);
+
+			if (temp_ID != client_ID)
+			{
+				temp_bullet->setIsEnemy(true);
+				bullets.push_back(temp_bullet);
+			}
+
+			//printf("recv ID: %i pos: %f , %f vel: %f , %f angle: %f\n", temp_ID, temp_bullet->getPosition().x, temp_bullet->getPosition().y, temp_bullet->getVelocity().x, temp_bullet->getVelocity().y, temp_bullet->getRotation());
 		}
+
+		break;
+	}
+	case PLAYER_DISCONNECT:
+	{
+		int temp_ID;
+
+		recv_pack >> temp_ID;
+
+		peers.erase(temp_ID);
+
+		break;
+	}
+	case LOBBY_UPDATE:
+	{
+		int temp_num;
+		bool temp_ready;
+
+		recv_pack >> temp_num;
+		num_peers = temp_num;
+
+		for (int i = 0; i < num_peers; i++)
+		{
+			int temp_ID;
+			recv_pack >> temp_ID;
+
+			recv_pack >> temp_ready;
+			if (peers.find(temp_ID) != peers.end() && temp_ID != client_ID)
+			{
+				peers[temp_ID]->setReady(temp_ready);
+			}
+			
+		}
+
+		break;
+	}
+	case GAME_STARTING:
+	{
+		change_to_level = true;
+		lobby_mode = false;
+		for (auto current : peers)
+		{
+			current.second->setUpTexture();
+		}
+		game_time = 0;
+		break;
+	}
+	case NEW_CONNECT_REJECT:
+	{
+		state_manager->changeState(StateManager::MENU);
+		break;
+	}
+	case ADD_PEER:
+	{
+		Peer* temp_peer = new Peer();
+		int temp_id;
+		recv_pack >> temp_id;
+		temp_peer->setID(temp_id);
+		temp_peer->setReady(false);
+		temp_peer->setPosition(sf::Vector2f(100, 100));
+		printf("ADD_PEER %i\n", temp_id);
+		peers.insert(std::pair<int, Peer*>(temp_id, temp_peer));
 
 		break;
 	}
@@ -392,6 +483,7 @@ void Client::SendUpdate()
 	{
 		sf::Packet game_update_packet;
 		game_update_packet << MessageType::PLAYER_UPDATE;
+		game_update_packet << game_time;
 		game_update_packet << client_ID;
 		game_update_packet << position.x;
 		game_update_packet << position.y;
@@ -433,4 +525,9 @@ void Client::SendUpdate()
 			break;
 		}
 	}
+}
+
+sf::Vector2f Client::lerp(sf::Vector2f a, sf::Vector2f b, float t)
+{
+	return a * (1 - t) + b * t;
 }

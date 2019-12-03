@@ -22,9 +22,9 @@ BulletManager::~BulletManager()
 
 void BulletManager::createNewBullet(sf::Vector2f cursor_pos, sf::Vector2f player_pos, Client* client_)
 {
-	//Bullet* target_bullet = nullptr;
+	Bullet* target_bullet = nullptr;
 
-	/*for (Bullet* current_bullet : bullets) 
+	for (Bullet* current_bullet : bullets) 
 	{
 		//if we are on the last bullets and its being used
 		if (current_bullet == bullets.back() && current_bullet->isAlive())
@@ -32,7 +32,7 @@ void BulletManager::createNewBullet(sf::Vector2f cursor_pos, sf::Vector2f player
 			//add a new bullet to the vector
 			Bullet* new_bullet = new Bullet;
 			new_bullet->setAlive(true);
-			
+
 			bullets.push_back(new_bullet);
 
 			target_bullet = new_bullet;
@@ -46,7 +46,7 @@ void BulletManager::createNewBullet(sf::Vector2f cursor_pos, sf::Vector2f player
 			target_bullet->setAlive(true);
 			break;
 		}
-	}*/
+	}
 
 	//get the x and y values for the vector we will make
 	float vectorX = cursor_pos.x - (player_pos.x + 32);
@@ -56,7 +56,7 @@ void BulletManager::createNewBullet(sf::Vector2f cursor_pos, sf::Vector2f player
 	//Multiply so bullets all move at the same speed
 	vel.x = vel.x * 400;
 	vel.y = vel.y * 400;
-	//target_bullet->setVelocity(vel);
+	target_bullet->setVelocity(vel);
 
 	//normalise so we just have the directions
 	sf::Vector2f playerPos = Vector::normalise(sf::Vector2f(player_pos.x + 25, player_pos.y + 32));
@@ -73,14 +73,18 @@ void BulletManager::createNewBullet(sf::Vector2f cursor_pos, sf::Vector2f player
 	}
 	angle += 90;
 
-	/*if (target_bullet)
+	if (target_bullet)
 	{
 		target_bullet->setRotation(angle);
-	}*/
+	}
 	
-	//target_bullet->setPosition(player_pos.x + 32, player_pos.y + 32);
 
-	client_->sendBulletInfo(sf::Vector2f(player_pos.x + 32, player_pos.y + 32), vel, angle);
+	target_bullet->setPosition(player_pos.x + 32, player_pos.y + 32);
+	target_bullet->setIsEnemy(false);
+
+	//printf("Sending pos: %f %f, vel: %f %f, angle: %f\n", target_bullet->getPosition().x, target_bullet->getPosition().y, vel.x, vel.y, angle);
+
+	client_->sendBulletInfo(target_bullet->getPosition(), vel, angle);
 }
 
 void BulletManager::updateBullets(float dt_, Client* client_)

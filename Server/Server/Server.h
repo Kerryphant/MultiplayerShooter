@@ -35,6 +35,7 @@ private:
 
 	struct BulletInfo
 	{
+		int sender_ID;
 		sf::Vector2f position;
 		sf::Vector2f velocity;
 		float angle;

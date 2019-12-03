@@ -26,6 +26,7 @@ private:
 	sf::Texture background_texture;
 	sf::Texture ready_texture;
 	sf::Texture unready_texture;
+	sf::Texture back_texture;
 	sf::RectangleShape background_shape;
 	sf::RectangleShape ready_shape;
 	sf::View multiplayer_view;
@@ -34,4 +35,5 @@ private:
 	Client* client;
 
 	Button* ready_button;
+	Button* back_button;
 };

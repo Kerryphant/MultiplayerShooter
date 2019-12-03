@@ -11,6 +11,7 @@ public:
 	~PlayerConnection();
 
 	float getLastMessageTime();
+	void incrementLastMessageTime(float amount_);
 
 	bool getRecievedThisFrame();
 	void setRecievedThisFrame(bool toggle_);
@@ -32,7 +33,8 @@ public:
 	sf::Vector2f getPosition();
 	void setPosition(sf::Vector2f position_);
 
-	
+	float getGameTime();
+	void setGameTime(float time_);
 
 private:
 
@@ -40,7 +42,7 @@ private:
 	int health;
 	sf::Vector2f position;
 	bool ready;
-
+	float game_time;
 
 	float last_message_time;
 	bool received_this_frame;

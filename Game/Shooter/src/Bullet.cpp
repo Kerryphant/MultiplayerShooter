@@ -9,6 +9,7 @@ Bullet::Bullet()
 	red.loadFromFile("Media/Sprites/Bullets/RedBullet.png");
 
 	changeTexture(BLUE);
+	current_tex = BLUE;
 
 	speed = 300.f;
 
@@ -30,6 +31,8 @@ void Bullet::update(float dt_)
 {
 	if (alive)
 	{
+		changeTexture(current_tex);
+
 		move(velocity*dt_);
 
 		updateCollisionBox();
@@ -50,4 +53,26 @@ void Bullet::changeTexture(BulletTexture tex_)
 	default:
 		break;
 	}
+}
+
+void Bullet::setIsEnemy(bool enemy)
+{
+	if (enemy)
+	{
+		current_tex = RED;
+	}
+	else
+	{
+		current_tex = BLUE;
+	}
+}
+
+bool Bullet::getIsEnemy()
+{
+	if (current_tex == RED)
+	{
+		return true;
+	}
+	
+	return false;
 }

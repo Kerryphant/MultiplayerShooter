@@ -26,6 +26,9 @@ public:
 	void setClientPtr(Client* client_);
 
 private:
+
+	void checkCollisions();
+
 	sf::View initialView;
 	Cursor cursor;
 

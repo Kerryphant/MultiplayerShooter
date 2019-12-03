@@ -20,6 +20,8 @@ public:
 	bool Update(sf::Vector2f position_);
 	void Init(StateManager* stateManager_);
 
+	void disconnect();
+
 	bool getReady();
 	void toggleReady();
 
@@ -54,7 +56,7 @@ private:
 	sf::Clock clock;
 	float tick;
 	float dt;
-	sf::Time start_time;
+	float game_time;
 
 	// Server network info
 	sf::IpAddress server_addr;
@@ -65,4 +67,6 @@ private:
 	void SendUpdate();
 
 	StateManager* state_manager;
+
+	sf::Vector2f lerp(sf::Vector2f a, sf::Vector2f b, float t);
 };
