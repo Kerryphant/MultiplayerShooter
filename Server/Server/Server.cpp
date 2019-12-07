@@ -1,15 +1,59 @@
 #include "Server.h"
 
 #include <chrono>
-#include <ctime>   
+#include <ctime>  
+#include <iostream>
+#include <fstream>
 
 Server::Server()
 {
 
-	if (socket.bind(SERVERPORT) != sf::Socket::Done)
-	{
-		// error...
+	// open file
+	std::ifstream inputFile("ServerPortInfo.txt");
+
+	std::string line;
+
+	// test file open
+	if (inputFile) {
+		std::cout << "port file is open" << std::endl;
+
+		//read the first line of the file
+		std::getline(inputFile, line);
+
+		printf("%s", line.c_str());
+
+		//return string contents as an unsigned integer, cast to unsigned short
+		port_num = (unsigned short)strtoul(line.c_str(), NULL, 0);
+
+		// close the file
+		inputFile.close();
 	}
+	else 
+	{
+		std::cout << "failed to open file" << std::endl;
+	}
+
+	//if the port number is valid
+	if (port_num != NULL && port_num > 0)
+	{
+		//try to bind the port
+		if (socket.bind(SERVERPORT) != sf::Socket::Done)
+		{
+			// error...
+			socket_bound = false;
+		}
+		else
+		{
+			socket_bound = true;
+		}
+	}
+	else
+	{
+		printf("failed to read valid port from file.");
+		socket_bound = false;
+	}
+
+	
 
 	socket.setBlocking(false);
 }
@@ -20,73 +64,75 @@ Server::~Server()
 
 void Server::update(sf::RenderWindow* window_)
 {
-	
-	
-	sf::Event event;
-	while (window_->pollEvent(event))
+	if (socket_bound)
 	{
-		if (event.type == sf::Event::Closed)
+
+		sf::Event event;
+		while (window_->pollEvent(event))
 		{
-			window_->close();
-		}
-	}
-	
-	//Get the time since the last frame in milliseconds
-	float dt = clock.restart().asSeconds();
-
-	tick += dt;
-
-	receiveMessage();
-
-	std::vector<std::map<int, PlayerConnection*>::iterator> temp_disconnect_IDs;
-
-	std::map<int, PlayerConnection*>::iterator it_current_player;
-	for (it_current_player = connected_players.begin(); it_current_player != connected_players.end(); ++it_current_player)
-	{
-		it_current_player->second->incrementLastMessageTime(dt);
-
-		//check for time out
-		float time_out_value = 5.0f;
-		//printf("last message time from %i was: %f \n", it_current_player->second->getID(), it_current_player->second->getLastMessageTime());
-		
-		if (it_current_player->second->getLastMessageTime() > time_out_value)
-		{
-			//disconnect the player
-			printf("Player timed out\n");
-			temp_disconnect_IDs.push_back(it_current_player);
-
-			for (auto inner_current_player : connected_players)
+			if (event.type == sf::Event::Closed)
 			{
-				if (inner_current_player.second->getID() != it_current_player->second->getID())
+				window_->close();
+			}
+		}
+
+		//Get the time since the last frame in milliseconds
+		float dt = clock.restart().asSeconds();
+
+		tick += dt;
+
+		receiveMessage();
+
+		std::vector<std::map<int, PlayerConnection*>::iterator> temp_disconnect_IDs;
+
+		std::map<int, PlayerConnection*>::iterator it_current_player;
+		for (it_current_player = connected_players.begin(); it_current_player != connected_players.end(); ++it_current_player)
+		{
+			it_current_player->second->incrementLastMessageTime(dt);
+
+			//check for time out
+			float time_out_value = 5.0f;
+			//printf("last message time from %i was: %f \n", it_current_player->second->getID(), it_current_player->second->getLastMessageTime());
+
+			if (it_current_player->second->getLastMessageTime() > time_out_value)
+			{
+				//disconnect the player
+				printf("Player timed out\n");
+				temp_disconnect_IDs.push_back(it_current_player);
+
+				for (auto inner_current_player : connected_players)
 				{
-					sf::Packet disconnect_packet;
-					disconnect_packet << MessageType::PLAYER_DISCONNECT;
-					disconnect_packet << it_current_player->second->getID();
-					if (socket.send(disconnect_packet, inner_current_player.second->getAddress(), inner_current_player.second->getPort()) != sf::Socket::Done)
+					if (inner_current_player.second->getID() != it_current_player->second->getID())
 					{
-						printf("failed to tell %i about disconnect \n", inner_current_player.second->getID());
+						sf::Packet disconnect_packet;
+						disconnect_packet << MessageType::PLAYER_DISCONNECT;
+						disconnect_packet << it_current_player->second->getID();
+						if (socket.send(disconnect_packet, inner_current_player.second->getAddress(), inner_current_player.second->getPort()) != sf::Socket::Done)
+						{
+							printf("failed to tell %i about disconnect \n", inner_current_player.second->getID());
+						}
 					}
 				}
 			}
 		}
-	}
 
-	for (auto current_ID : temp_disconnect_IDs)
-	{
-		delete current_ID->second;
-		connected_players.erase(current_ID);
-		--num_connected_players;
-	}
+		for (auto current_ID : temp_disconnect_IDs)
+		{
+			delete current_ID->second;
+			connected_players.erase(current_ID);
+			--num_connected_players;
+		}
 
-	if (tick >= 1 / 64.f)
-	{
-		sendClientUpdates(dt);
-		tick = 0;
-	}
+		if (tick >= 1 / 64.f)
+		{
+			sendClientUpdates(dt);
+			tick = 0;
+		}
 
-	for (auto current_player : connected_players)
-	{
-		current_player.second->setRecievedThisFrame(false);
+		for (auto current_player : connected_players)
+		{
+			current_player.second->setRecievedThisFrame(false);
+		}
 	}
 }
 
@@ -327,21 +373,6 @@ void Server::sendClientUpdates(float dt_)
 	//if no win condition, send out updates to clients
 	if (true)
 	{
-		//Handle predicting new positions. All clients must be checked before data is sent out
-		//if (!lobby_mode)
-		//{
-		//	for (auto current_player : connected_players)
-		//	{
-		//		//if not got position from them this frame
-		//		if (!current_player.second->getRecievedThisFrame())
-		//		{
-		//			//predict position
-		//			current_player.second->predictNewPosition();
-		//			current_player.second->setRecievedThisFrame(false);
-		//		}
-		//	}
-		//}
-
 		//for each client
 		for (auto current_player : connected_players)
 		{

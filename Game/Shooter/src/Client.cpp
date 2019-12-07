@@ -85,14 +85,47 @@ bool Client::Update(sf::Vector2f position_)
 void Client::Init(StateManager* state_manager_)
 {
 	state_manager = state_manager_;
-	
-	local_addr = "127.0.0.1";
-	server_addr = "127.0.0.1";
-	server_port = 4444;
 
-	if (local_sock.bind(sf::Socket::AnyPort, local_addr) != sf::Socket::Done)
+	std::ifstream inputFile("ServerInfo.txt");
+
+	std::string line;
+
+	// test file open
+	if (inputFile) {
+		std::cout << "port file is open\n" << std::endl;
+
+		//read the first line of the file
+		std::getline(inputFile, line);
+
+		printf("read address as %s\n", line.c_str());
+
+		//return string contents as an unsigned integer, cast to unsigned short
+		server_addr = line;
+
+		std::getline(inputFile, line);
+
+		printf("read port as %s\n", line.c_str());
+
+		server_port = (unsigned short)strtoul(line.c_str(), NULL, 0);
+
+		// close the file
+		inputFile.close();
+	}
+	else
+	{
+		std::cout << "failed to open file\n" << std::endl;
+	}
+
+	if (server_port == NULL || server_port < 0)
+	{
+		printf("failed to read valid port number\n");
+		state_manager_->changeState(StateManager::MENU);
+	}
+
+	if (local_sock.bind(sf::Socket::AnyPort) != sf::Socket::Done)
 	{
 		std::printf("Socket did not bind\n");
+		state_manager_->changeState(StateManager::MENU);
 	}
 	local_port = local_sock.getLocalPort();
 
@@ -201,16 +234,18 @@ void Client::JoinServer(sf::UdpSocket* sock_, sf::IpAddress addr_, unsigned shor
 			{
 			case sf::Socket::NotReady:
 				printf("Socket not ready\n");
+				state_manager->changeState(StateManager::MENU);
 				break;
 			case sf::Socket::Partial:
 				printf("Socket partial\n");
 				break;
 			case sf::Socket::Disconnected:
 				printf("Socket disconnected.\n");
-
+				state_manager->changeState(StateManager::MENU);
 				break;
 			case sf::Socket::Error:
 				printf("Socket ERROR\n");
+				state_manager->changeState(StateManager::MENU);
 				break;
 			default:
 				break;

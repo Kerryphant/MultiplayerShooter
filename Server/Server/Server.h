@@ -3,9 +3,6 @@
 
 #include "PlayerConnection.h"
 
-// The IP address for the server
-#define SERVERIP "127.0.0.1"
-
 // The UDP port number for the server
 #define SERVERPORT 4444
 
@@ -29,6 +26,9 @@ private:
 	sf::Clock clock;
 	float tick;
 	sf::Time start_time;
+
+	unsigned short port_num;
+	bool socket_bound;
 
 	//enum for message types
 	enum MessageType { NEW_CONNECTION, PLAYER_UPDATE, PLAYER_DISCONNECT, LOBBY_UPDATE, GAME_STARTING, NEW_CONNECT_REJECT, ADD_PEER, NEW_BULLET };

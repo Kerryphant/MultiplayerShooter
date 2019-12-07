@@ -124,16 +124,7 @@ void LobbyState::Render()
 	{
 		if (current_peer.second->getID() == client->getID())
 		{
-			if (client->getReady())
-			{
-				ready_button->setSprite("Media/Sprites/ReadyButton2.png");
-				window->draw(*ready_button);
-			}
-			else
-			{
-				ready_button->setSprite("Media/Sprites/ReadyButton.png");
-				window->draw(*ready_button);
-			}
+
 		}
 		else
 		{
@@ -150,6 +141,17 @@ void LobbyState::Render()
 			window->draw(ready_shape);
 			count++;
 		}
+	}
+
+	if (client->getReady())
+	{
+		ready_button->setSprite("Media/Sprites/ReadyButton2.png");
+		window->draw(*ready_button);
+	}
+	else
+	{
+		ready_button->setSprite("Media/Sprites/ReadyButton.png");
+		window->draw(*ready_button);
 	}
 
 	window->draw(cursor);
