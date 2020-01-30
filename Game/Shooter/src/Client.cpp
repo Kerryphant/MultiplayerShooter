@@ -344,8 +344,11 @@ void Client::ReceiveMessage()
 		{
 			bool temp_ready;
 			recv_pack >> temp_ready;
-
-			peers[i]->setReady(temp_ready);
+				
+			if (peers.size() > 0)
+			{
+				peers[i]->setReady(temp_ready);
+			}
 		}
 
 		break;

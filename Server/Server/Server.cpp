@@ -291,10 +291,6 @@ void Server::receiveMessage()
 		}
 		case NEW_BULLET:
 		{
-
-			size_t temp = recvPack.getDataSize();
-			printf("bullet packet size is %zd\n", temp);
-
 			BulletInfo temp_info;
 
 			recvPack >> temp_info.sender_ID;
